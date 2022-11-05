@@ -1,5 +1,5 @@
 # CheckTaglist
-# by Hans Rottier started 5/11/2022
+by Hans Rottier started 5/11/2022
 
 This little program compares the Full list of Webtags on the Cumulus Wiki with the full list of WebTags as produced by CumulusMX. 
 
