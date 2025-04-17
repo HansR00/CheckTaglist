@@ -1,26 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace CheckTaglist
 {
     internal class CheckTaglist
     {
 
-        static void Main()
+        static async Task Main()
         {
             try
             {
                 string[] ExistingTags = File.ReadAllLines( "./WebTags.txt" );
+                var wikiUrl = "https://cumuluswiki.org/a/Full_list_of_Webtags";
+                string WikiTaglist; // = File.ReadAllText( "./WikiWebtags.txt" );
 
-                WebClient webClient = new WebClient();
-                webClient.DownloadFile( "https://cumuluswiki.org/a/Full_list_of_Webtags", @"./WikiWebtags.txt" );
-                string WikiTaglist = File.ReadAllText( "./WikiWebtags.txt" );
+                using ( var webClient = new HttpClient() )
+                {
+                    WikiTaglist = await webClient.GetStringAsync( wikiUrl );
+                }
 
                 using ( StreamWriter sw = new StreamWriter( "TagsToDo.txt" ) )
                 {
-                    SearchDuplicates( sw, WikiTaglist );
+                    // If you wish to check duplicates uncomment next line
+                    //SearchDuplicates( sw, WikiTaglist );
                     SearchMissingInWiki( sw, ExistingTags, WikiTaglist );
                 }
             }
@@ -44,7 +49,8 @@ namespace CheckTaglist
                 if ( !WikiTaglist.Contains( $"&lt;#{TagName}" ) )
                 {
                     if ( TagName.Contains( "AirLink" ) ) continue;                  // known to be there but complex because of [IN|OUT] addition
-                    if ( char.IsDigit( TagName[ TagName.Length - 1 ] ) ) continue;  // Skip all Extra sensor tags (ending with a digit)
+                    if ( char.IsDigit( TagName[ TagName.Length - 1 ] ) ) 
+                        continue;  // Skip all Extra sensor tags (ending with a digit)
 
                     sw.WriteLine( $"Missing {TagName} in Wiki." );
                     count++;
